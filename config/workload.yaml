@@ -34,5 +34,4 @@ spec:
     git:
       ref:
         branch: main
-      url: https://github.com/vmware-tanzu/application-accelerator-samples.git
-    subPath: java-rest-service
+      url: https://github.com/d-lorenc/tapathon-service.git
