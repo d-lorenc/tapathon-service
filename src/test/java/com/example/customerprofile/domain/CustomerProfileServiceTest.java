@@ -36,7 +36,6 @@ class CustomerProfileServiceTest {
         assertThat(result.getFirstName()).isEqualTo(customerProfile.getFirstName());
         assertThat(result.getLastName()).isEqualTo(customerProfile.getLastName());
         assertThat(result.getEmail()).isEqualTo(customerProfile.getEmail());
-        assertThat(result.getId()).isNotBlank();
 
         var customerProfileEntityCaptor = ArgumentCaptor.forClass(CustomerProfileEntity.class);
         verify(repository).save(customerProfileEntityCaptor.capture());
@@ -45,32 +44,22 @@ class CustomerProfileServiceTest {
         assertThat(customerProfileEntity.getFirstName()).isEqualTo(customerProfile.getFirstName());
         assertThat(customerProfileEntity.getLastName()).isEqualTo(customerProfile.getLastName());
         assertThat(customerProfileEntity.getEmail()).isEqualTo(customerProfile.getEmail());
-        assertThat(customerProfileEntity.getId()).isEqualTo(UUID.fromString(result.getId()));
+        assertThat(customerProfileEntity.getId()).isEqualTo(result.getId());
     }
 
     @Test
     void shouldDelegateToRepositoryToRetrieveProfile() {
-        var id = UUID.randomUUID();
-        var entity = new CustomerProfileEntity().setId(id).setFirstName("Joe").setLastName("Doe").setEmail("joe.doe@test.org");
+        var entity = new CustomerProfileEntity().setId(123L).setFirstName("Joe").setLastName("Doe").setEmail("joe.doe@test.org");
         when(repository.findById(any())).thenReturn(Optional.of(entity));
 
-        var resultOptional = subject.getById(id.toString());
+        var resultOptional = subject.getById(123L);
 
         assertThat(resultOptional).isPresent();
         var result = resultOptional.get();
         assertThat(result.getFirstName()).isEqualTo(entity.getFirstName());
         assertThat(result.getLastName()).isEqualTo(entity.getLastName());
         assertThat(result.getEmail()).isEqualTo(entity.getEmail());
-        assertThat(result.getId()).isEqualTo(id.toString());
-        verify(repository).findById(id);
-    }
-
-    @Test
-    void shouldReturnEmptyIfIdIsInvalid() {
-        var resultOptional = subject.getById("invalid-id");
-
-        assertThat(resultOptional).isEmpty();
-
-        verifyNoInteractions(repository);
+        assertThat(result.getId()).isEqualTo(123L);
+        verify(repository).findById(123L);
     }
 }

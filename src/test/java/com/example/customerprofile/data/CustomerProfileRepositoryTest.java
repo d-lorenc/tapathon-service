@@ -18,16 +18,15 @@ class CustomerProfileRepositoryTest {
 
     @Test
 	void shouldPersistCustomerProfile() {
-		var id = UUID.randomUUID();
 		var entity = new CustomerProfileEntity()
 				.setFirstName("Joe")
 				.setLastName("Doe")
 				.setEmail("joe.doe@test.com")
-				.setId(id);
+				.setId(123L);
 
-		subject.save(entity);
+		var savedEntity = subject.save(entity);
 
-		var actual = subject.findById(id);
+		var actual = subject.findById(savedEntity.getId());
 		assertThat(actual).isPresent();
 		var actualEntity = actual.get();
 		assertThat(actualEntity).isNotSameAs(entity);

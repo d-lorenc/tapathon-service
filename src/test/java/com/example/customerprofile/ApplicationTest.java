@@ -51,15 +51,14 @@ class ApplicationTest {
         var location = responseEntity.getHeaders().getLocation();
         assertThat(location).isNotNull();
 
-        var profileId = location.getPath().substring(location.getPath().lastIndexOf("/") + 1);
-        var profile = repository.findById(UUID.fromString(profileId));
+        var profileId = Long.decode(location.getPath().substring(location.getPath().lastIndexOf("/") + 1));
+        var profile = repository.findById(profileId);
         assertThat(profile).isPresent();
     }
 
     @Test
     void shouldReturnCustomerProfileOnGetRequest() {
         var entity = new CustomerProfileEntity()
-                .setId(UUID.randomUUID())
                 .setFirstName("Joe")
                 .setLastName("Doe")
                 .setEmail("joe.doe@test.org");

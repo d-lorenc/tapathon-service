@@ -1,14 +1,14 @@
 package com.example.customerprofile.data;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
+import javax.persistence.*;
 import java.util.UUID;
 
 @Entity(name = "CUSTOMER_PROFILE")
 public class CustomerProfileEntity {
 
     @Id
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     private String firstName;
 
@@ -16,11 +16,11 @@ public class CustomerProfileEntity {
 
     private String email;
 
-    public UUID getId() {
+    public Long getId() {
         return id;
     }
 
-    public CustomerProfileEntity setId(UUID id) {
+    public CustomerProfileEntity setId(Long id) {
         this.id = id;
         return this;
     }

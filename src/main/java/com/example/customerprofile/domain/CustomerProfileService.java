@@ -21,7 +21,6 @@ public class CustomerProfileService {
     @Transactional
     public CustomerProfileResponse create(CustomerProfileCreateRequest dto) {
         var entity = new CustomerProfileEntity()
-                .setId(UUID.randomUUID())
                 .setFirstName(dto.getFirstName())
                 .setLastName(dto.getLastName())
                 .setEmail(dto.getEmail());
@@ -30,24 +29,14 @@ public class CustomerProfileService {
         return entityToDto(persistedEntity);
     }
 
-    public Optional<CustomerProfileResponse> getById(String idRepresentation) {
-        return safeConvertToUUID(idRepresentation)
-                .flatMap(repository::findById)
+    public Optional<CustomerProfileResponse> getById(Long id) {
+        return repository.findById(id)
                 .map(this::entityToDto);
-    }
-
-    private Optional<UUID> safeConvertToUUID(String stringRepresentation) {
-        try {
-            return Optional.of(UUID.fromString(stringRepresentation));
-        }
-        catch (IllegalArgumentException ignorable) {
-            return Optional.empty();
-        }
     }
 
     private CustomerProfileResponse entityToDto(CustomerProfileEntity entity) {
         return new CustomerProfileResponse(
-                entity.getId().toString(),
+                entity.getId(),
                 entity.getFirstName(),
                 entity.getLastName(),
                 entity.getEmail());

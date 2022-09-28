@@ -37,7 +37,7 @@ class CustomerProfileControllerTest {
         void shouldDelegateToService() throws Exception {
 
             when(service.create(any()))
-                    .thenReturn(new CustomerProfileResponse("profile-id", "Joe", "Doe", "joe.doe@test.org"));
+                    .thenReturn(new CustomerProfileResponse(123L, "Joe", "Doe", "joe.doe@test.org"));
 
             var requestBody = "{" +
                     "\"firstName\": \"Joe\"," +
@@ -50,9 +50,9 @@ class CustomerProfileControllerTest {
                             .accept(MediaType.APPLICATION_JSON)
                             .content(requestBody))
                     .andExpect(status().isCreated())
-                    .andExpect(header().string("Location", "/api/customer-profiles/profile-id"))
+                    .andExpect(header().string("Location", "/api/customer-profiles/123"))
                     .andExpect(content().json("{" +
-                            "\"id\": \"profile-id\"," +
+                            "\"id\": 123," +
                             "\"firstName\": \"Joe\"," +
                             "\"lastName\": \"Doe\"," +
                             "\"email\": \"joe.doe@test.org\"" +
@@ -91,7 +91,7 @@ class CustomerProfileControllerTest {
         @Test
         void shouldDelegateToService() throws Exception {
 
-            var id = "customer-profile-id";
+            var id = 123L;
             when(service.getById(any()))
                     .thenReturn(Optional.of(new CustomerProfileResponse(id, "Joe", "Doe", "joe.doe@test.org")));
 
@@ -99,7 +99,7 @@ class CustomerProfileControllerTest {
                             .accept(MediaType.APPLICATION_JSON))
                     .andExpect(status().isOk())
                     .andExpect(content().json("{" +
-                            "\"id\": \"customer-profile-id\"," +
+                            "\"id\": 123," +
                             "\"firstName\": \"Joe\"," +
                             "\"lastName\": \"Doe\"," +
                             "\"email\": \"joe.doe@test.org\"" +
@@ -111,7 +111,7 @@ class CustomerProfileControllerTest {
         @Test
         void shouldReturnNotFoundWhenNotExists() throws Exception {
 
-            var id = "customer-profile-id";
+            var id = 123L;
             when(service.getById(any())).thenReturn(Optional.empty());
 
             mockMvc.perform(get("/api/customer-profiles/" + id)

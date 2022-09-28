@@ -78,7 +78,7 @@ public class CustomerProfileController {
             )
     })
     @GetMapping("/{id}")
-    public ResponseEntity<CustomerProfileResponse> get(@PathVariable("id") String id) {
+    public ResponseEntity<CustomerProfileResponse> get(@PathVariable("id") Long id) {
         var customerProfileResponse = service.getById(id);
         return customerProfileResponse.isEmpty()
                 ? ResponseEntity.notFound().build()

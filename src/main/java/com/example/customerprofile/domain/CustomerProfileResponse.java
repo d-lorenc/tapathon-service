@@ -1,11 +1,12 @@
 package com.example.customerprofile.domain;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 
 public class CustomerProfileResponse {
 
-    @NotBlank
-    private final String id;
+    @NotNull
+    private final Long id;
 
     private final String firstName;
 
@@ -14,14 +15,14 @@ public class CustomerProfileResponse {
     @NotBlank
     private final String email;
 
-    public CustomerProfileResponse(String id, String firstName, String lastName, String email) {
+    public CustomerProfileResponse(Long id, String firstName, String lastName, String email) {
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
     }
 
-    public String getId() {
+    public Long getId() {
         return id;
     }
 
