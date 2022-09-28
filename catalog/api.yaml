@@ -1,7 +1,7 @@
 apiVersion: backstage.io/v1alpha1
 kind: API
 metadata:
-  name: customer profile
+  name: customer-profile
   description: The Customer Profile API
 spec:
   type: openapi
