@@ -9,4 +9,4 @@ spec:
   owner: default-team
   system: tapathon
   definition:
-    $text: https://customer-profile-dariusz.tap.h2o-2-1249.h2o.vmware.com/api-docs
+    $text: https://github.com/d-lorenc/tapathon-service/blob/main/catalog/openapi.json
