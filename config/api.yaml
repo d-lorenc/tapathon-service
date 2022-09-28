@@ -1,0 +1,12 @@
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: customer profile
+  description: The Customer Profile API
+spec:
+  type: openapi
+  lifecycle: production
+  owner: default-team
+  system: tapathon
+  definition:
+    $text: https://customer-profile-dariusz.tap.h2o-2-1249.h2o.vmware.com/api-docs
