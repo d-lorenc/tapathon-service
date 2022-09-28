@@ -9,12 +9,6 @@ metadata:
     apps.tanzu.vmware.com/has-tests: true
     apis.apps.tanzu.vmware.com/register-api: "true"
 spec:
-  serviceClaims:
-    - name: db
-      ref:
-        apiVersion: sql.tanzu.vmware.com/v1
-        kind: Postgres
-        name: customer-profile-database
   build:
     env:
       - name: BP_JVM_VERSION
@@ -23,14 +17,6 @@ spec:
     - name: annotations
       value:
         autoscaling.knative.dev/minScale: "1"
-    - name: api_descriptor
-      value:
-        type: openapi
-        location: 
-          path: "/api-docs"
-        owner: 
-        system: tapathon
-        description: Api
   source:
     git:
       ref:
