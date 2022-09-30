@@ -91,7 +91,7 @@ class CustomerProfileControllerTest {
         @Test
         void shouldDelegateToService() throws Exception {
 
-            var id = 123456L;
+            var id = 123L;
             when(service.getById(any()))
                     .thenReturn(Optional.of(new CustomerProfileResponse(id, "Joe", "Doe", "joe.doe@test.org")));
 
