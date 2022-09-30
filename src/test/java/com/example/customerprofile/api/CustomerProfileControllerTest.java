@@ -1,22 +1,22 @@
 package com.example.customerprofile.api;
 
-import com.example.customerprofile.domain.CustomerProfileCreateRequest;
-import com.example.customerprofile.domain.CustomerProfileResponse;
 import com.example.customerprofile.domain.CustomerProfileService;
+import com.example.customerprofile.domain.NewCustomerProfile;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Optional;
 
+import static com.example.customerprofile.domain.TestData.testCustomerProfile;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -35,50 +35,36 @@ class CustomerProfileControllerTest {
 
         @Test
         void shouldDelegateToService() throws Exception {
-
-            when(service.create(any()))
-                    .thenReturn(new CustomerProfileResponse(123L, "Joe", "Doe", "joe.doe@test.org"));
-
-            var requestBody = "{" +
-                    "\"firstName\": \"Joe\"," +
-                    "\"lastName\": \"Doe\"," +
-                    "\"email\": \"joe.doe@test.org\"" +
-                    "}";
+            when(service.create(any())).thenReturn(testCustomerProfile());
 
             mockMvc.perform(post("/api/customer-profiles")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .accept(MediaType.APPLICATION_JSON)
-                            .content(requestBody))
+                            .contentType(APPLICATION_JSON)
+                            .accept(APPLICATION_JSON)
+                            .content("{" +
+                                    "\"firstName\": \"Joe\"," +
+                                    "\"lastName\": \"Doe\"," +
+                                    "\"email\": \"joe.doe@test.org\"" +
+                                    "}"))
                     .andExpect(status().isCreated())
-                    .andExpect(header().string("Location", "/api/customer-profiles/123"))
-                    .andExpect(content().json("{" +
-                            "\"id\": 123," +
-                            "\"firstName\": \"Joe\"," +
-                            "\"lastName\": \"Doe\"," +
-                            "\"email\": \"joe.doe@test.org\"" +
-                            "}"));
+                    .andExpect(header().string("Location", "http://localhost/api/customer-profiles/123"));
 
-            var profileCaptor = ArgumentCaptor.forClass(CustomerProfileCreateRequest.class);
+            var profileCaptor = ArgumentCaptor.forClass(NewCustomerProfile.class);
             verify(service).create(profileCaptor.capture());
-
             var profile = profileCaptor.getValue();
-            assertThat(profile).isNotNull();
-            assertThat(profile.getFirstName()).isEqualTo("Joe");
-            assertThat(profile.getLastName()).isEqualTo("Doe");
-            assertThat(profile.getEmail()).isEqualTo("joe.doe@test.org");
+            assertThat(profile.firstName()).isEqualTo("Joe");
+            assertThat(profile.lastName()).isEqualTo("Doe");
+            assertThat(profile.email()).isEqualTo("joe.doe@test.org");
         }
 
         @Test
         void shouldReturnBadRequestWhenEmailIsNotProvided() throws Exception {
-            var requestBody = "{" +
-                    "\"firstName\": \"Joe\"," +
-                    "\"lastName\": \"Doe\"" +
-                    "}";
-
             mockMvc.perform(post("/api/customer-profiles")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .accept(MediaType.APPLICATION_JSON)
-                            .content(requestBody))
+                            .contentType(APPLICATION_JSON)
+                            .accept(APPLICATION_JSON)
+                            .content("{" +
+                                    "\"firstName\": \"Joe\"," +
+                                    "\"lastName\": \"Doe\"" +
+                                    "}"))
                     .andExpect(status().isBadRequest());
 
             verifyNoInteractions(service);
@@ -90,13 +76,10 @@ class CustomerProfileControllerTest {
 
         @Test
         void shouldDelegateToService() throws Exception {
+            when(service.getById(any())).thenReturn(Optional.of(testCustomerProfile()));
 
-            var id = 123L;
-            when(service.getById(any()))
-                    .thenReturn(Optional.of(new CustomerProfileResponse(id, "Joe", "Doe", "joe.doe@test.org")));
-
-            mockMvc.perform(get("/api/customer-profiles/" + id)
-                            .accept(MediaType.APPLICATION_JSON))
+            mockMvc.perform(get("/api/customer-profiles/123")
+                            .accept(APPLICATION_JSON))
                     .andExpect(status().isOk())
                     .andExpect(content().json("{" +
                             "\"id\": 123," +
@@ -105,21 +88,19 @@ class CustomerProfileControllerTest {
                             "\"email\": \"joe.doe@test.org\"" +
                             "}"));
 
-            verify(service).getById(id);
+            verify(service).getById(123L);
         }
 
         @Test
         void shouldReturnNotFoundWhenNotExists() throws Exception {
-
-            var id = 123L;
             when(service.getById(any())).thenReturn(Optional.empty());
 
-            mockMvc.perform(get("/api/customer-profiles/" + id)
-                            .accept(MediaType.APPLICATION_JSON))
+            mockMvc.perform(get("/api/customer-profiles/123")
+                            .accept(APPLICATION_JSON))
                     .andExpect(status().isNotFound())
                     .andExpect(content().string(""));
 
-            verify(service).getById(id);
+            verify(service).getById(123L);
         }
     }
 }

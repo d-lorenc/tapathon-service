@@ -1,11 +1,8 @@
 package com.example.customerprofile.api;
 
-import java.net.URI;
-
-import com.example.customerprofile.domain.CustomerProfileCreateRequest;
-import com.example.customerprofile.domain.CustomerProfileResponse;
+import com.example.customerprofile.domain.CustomerProfile;
 import com.example.customerprofile.domain.CustomerProfileService;
-
+import com.example.customerprofile.domain.NewCustomerProfile;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.headers.Header;
@@ -15,15 +12,14 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import javax.validation.Valid;
+import java.net.URI;
+
+import static org.springframework.http.ResponseEntity.notFound;
+import static org.springframework.http.ResponseEntity.ok;
 
 @OpenAPIDefinition(
         info = @Info(
@@ -34,11 +30,11 @@ import javax.validation.Valid;
 @CrossOrigin
 @RestController
 @RequestMapping("/api/customer-profiles")
-public class CustomerProfileController {
+class CustomerProfileController {
 
     private final CustomerProfileService service;
 
-    public CustomerProfileController(CustomerProfileService service) {
+    CustomerProfileController(CustomerProfileService service) {
         this.service = service;
     }
 
@@ -59,11 +55,12 @@ public class CustomerProfileController {
             )
     })
     @PostMapping("")
-    public ResponseEntity<CustomerProfileResponse> create(@Valid @RequestBody CustomerProfileCreateRequest body) {
-        var customerProfileResponse = service.create(body);
-        return ResponseEntity
-                .created(URI.create("/api/customer-profiles/" + customerProfileResponse.getId()))
-                .body(customerProfileResponse);
+    ResponseEntity<Void> create(@Valid @RequestBody CustomerProfileCreateRequest request) {
+        var newCustomerProfile = fromRequest(request);
+
+        var customerProfile = service.create(newCustomerProfile);
+
+        return ResponseEntity.created(toLocationUri(customerProfile.id())).build();
     }
 
     @Operation(summary = "Get customer profile.", method = "GET", tags = "Customer Profile CRUD")
@@ -78,10 +75,36 @@ public class CustomerProfileController {
             )
     })
     @GetMapping("/{id}")
-    public ResponseEntity<CustomerProfileResponse> get(@PathVariable("id") Long id) {
-        var customerProfileResponse = service.getById(id);
-        return customerProfileResponse.isEmpty()
-                ? ResponseEntity.notFound().build()
-                : ResponseEntity.ok(customerProfileResponse.get());
+    ResponseEntity<CustomerProfileResponse> get(@PathVariable("id") Long id) {
+        var customerProfile = service.getById(id);
+
+        return customerProfile
+                .map(profile -> ok(toResponse(profile)))
+                .orElseGet(() -> notFound().build());
+    }
+
+    private CustomerProfileResponse toResponse(CustomerProfile customerProfile) {
+        return new CustomerProfileResponse(
+                customerProfile.id(),
+                customerProfile.firstName(),
+                customerProfile.lastName(),
+                customerProfile.email()
+        );
+    }
+
+    private static NewCustomerProfile fromRequest(CustomerProfileCreateRequest request) {
+        return new NewCustomerProfile(
+                request.firstName(),
+                request.lastName(),
+                request.email()
+        );
+    }
+
+    private URI toLocationUri(Long id) {
+        return ServletUriComponentsBuilder
+                .fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(id)
+                .toUri();
     }
 }

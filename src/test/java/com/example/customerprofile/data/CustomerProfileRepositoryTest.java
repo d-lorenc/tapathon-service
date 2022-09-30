@@ -1,15 +1,15 @@
 package com.example.customerprofile.data;
 
+import com.example.customerprofile.domain.NewCustomerProfile;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
-import java.util.UUID;
-
+import static com.example.customerprofile.domain.TestData.testNewCustomerProfile;
 import static org.assertj.core.api.Assertions.assertThat;
 
-@DataJpaTest
+@SpringBootTest
 @ActiveProfiles("test")
 class CustomerProfileRepositoryTest {
 
@@ -18,20 +18,14 @@ class CustomerProfileRepositoryTest {
 
     @Test
 	void shouldPersistCustomerProfile() {
-		var entity = new CustomerProfileEntity()
-				.setFirstName("Joe")
-				.setLastName("Doe")
-				.setEmail("joe.doe@test.com")
-				.setId(123L);
+		NewCustomerProfile newCustomerProfile = testNewCustomerProfile();
 
-		var savedEntity = subject.save(entity);
+		var customerProfile = subject.create(newCustomerProfile);
+		var actual = subject.findById(customerProfile.id());
 
-		var actual = subject.findById(savedEntity.getId());
-		assertThat(actual).isPresent();
 		var actualEntity = actual.get();
-		assertThat(actualEntity).isNotSameAs(entity);
-		assertThat(actualEntity.getFirstName()).isEqualTo(entity.getFirstName());
-		assertThat(actualEntity.getLastName()).isEqualTo(entity.getLastName());
-		assertThat(actualEntity.getEmail()).isEqualTo(entity.getEmail());
+		assertThat(actualEntity.firstName()).isEqualTo(customerProfile.firstName());
+		assertThat(actualEntity.lastName()).isEqualTo(customerProfile.lastName());
+		assertThat(actualEntity.email()).isEqualTo(customerProfile.email());
 	}
 }

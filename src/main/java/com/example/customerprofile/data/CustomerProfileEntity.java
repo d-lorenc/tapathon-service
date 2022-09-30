@@ -1,10 +1,12 @@
 package com.example.customerprofile.data;
 
-import javax.persistence.*;
-import java.util.UUID;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
 
 @Entity(name = "CUSTOMER_PROFILE")
-public class CustomerProfileEntity {
+class CustomerProfileEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,35 +22,31 @@ public class CustomerProfileEntity {
         return id;
     }
 
-    public CustomerProfileEntity setId(Long id) {
+    public void setId(Long id) {
         this.id = id;
-        return this;
     }
 
     public String getFirstName() {
         return firstName;
     }
 
-    public CustomerProfileEntity setFirstName(String firstName) {
+    public void setFirstName(String firstName) {
         this.firstName = firstName;
-        return this;
     }
 
     public String getLastName() {
         return lastName;
     }
 
-    public CustomerProfileEntity setLastName(String lastName) {
+    public void setLastName(String lastName) {
         this.lastName = lastName;
-        return this;
     }
 
     public String getEmail() {
         return email;
     }
 
-    public CustomerProfileEntity setEmail(String email) {
+    public void setEmail(String email) {
         this.email = email;
-        return this;
     }
 }

@@ -1,22 +1,19 @@
 package com.example.customerprofile;
 
-import com.example.customerprofile.data.CustomerProfileEntity;
-import com.example.customerprofile.data.CustomerProfileRepository;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.skyscreamer.jsonassert.JSONAssert;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 
-import java.util.UUID;
-
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.http.HttpStatus.CREATED;
+import static org.springframework.http.HttpStatus.OK;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
@@ -25,16 +22,44 @@ class ApplicationTest {
     @Autowired
     private TestRestTemplate restTemplate;
 
-    @Autowired
-    private CustomerProfileRepository repository;
+    @Test
+    void shouldPassHealthCheck() {
+        var responseEntity = restTemplate.getForEntity("/actuator/health", String.class);
 
-    @BeforeEach
-    void cleanupDatabase() {
-        repository.deleteAllInBatch();
+        assertThat(responseEntity.getStatusCode()).isEqualTo(OK);
     }
 
     @Test
-    void shouldPersistCustomerProfileOnPostRequest() {
+    void shouldExposeOpenApiEndpoint() {
+        var responseEntity = restTemplate.getForEntity("/api-docs", String.class);
+
+        assertThat(responseEntity.getStatusCode()).isEqualTo(OK);
+    }
+
+    @Test
+    void shouldPersistCustomerProfileOnPostRequest() throws Exception {
+        var response = restTemplate.postForEntity(
+                "/api/customer-profiles",
+                createCustomerProfileRequest(),
+                String.class
+        );
+
+        assertThat(response.getStatusCode()).isEqualTo(CREATED);
+        Long profileId = extractCustomerProfileFromLocationHeader(response);
+
+        response = restTemplate.getForEntity("/api/customer-profiles/" + profileId, String.class);
+
+        assertThat(response.getStatusCode()).isEqualTo(OK);
+        var expectedJson = "{" +
+                "\"id\": " + profileId + "," +
+                "\"firstName\": \"Joe\"," +
+                "\"lastName\": \"Doe\"," +
+                "\"email\": \"joe.doe@test.org\"" +
+                "}";
+        JSONAssert.assertEquals(expectedJson, response.getBody(), false);
+    }
+
+    private HttpEntity<String> createCustomerProfileRequest() {
         var body = "{" +
                 "\"firstName\": \"Joe\"," +
                 "\"lastName\": \"Doe\"," +
@@ -42,40 +67,12 @@ class ApplicationTest {
                 "}";
 
         var headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        var httpEntity = new HttpEntity<>(body, headers);
-        var responseEntity = restTemplate.postForEntity("/api/customer-profiles", httpEntity, String.class);
+        headers.setContentType(APPLICATION_JSON);
+        return new HttpEntity<>(body, headers);
+    }
 
-        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.CREATED);
-        assertThat(responseEntity.hasBody()).isTrue();
+    private Long extractCustomerProfileFromLocationHeader(ResponseEntity<String> responseEntity) {
         var location = responseEntity.getHeaders().getLocation();
-        assertThat(location).isNotNull();
-
-        var profileId = Long.decode(location.getPath().substring(location.getPath().lastIndexOf("/") + 1));
-        var profile = repository.findById(profileId);
-        assertThat(profile).isPresent();
-    }
-
-    @Test
-    void shouldReturnCustomerProfileOnGetRequest() {
-        var entity = new CustomerProfileEntity()
-                .setFirstName("Joe")
-                .setLastName("Doe")
-                .setEmail("joe.doe@test.org");
-        repository.save(entity);
-
-        var responseEntity = restTemplate.getForEntity("/api/customer-profiles/" + entity.getId(), String.class);
-
-        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(responseEntity.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_JSON);
-        assertThat(responseEntity.hasBody()).isTrue();
-        assertThat(responseEntity.getBody()).contains(entity.getId().toString());
-    }
-
-    @Test
-    void shouldExposeOpenAPIEndpoint() {
-        var responseEntity = restTemplate.getForEntity("/api-docs", String.class);
-
-        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
+        return Long.decode(location.getPath().substring(location.getPath().lastIndexOf("/") + 1));
     }
 }

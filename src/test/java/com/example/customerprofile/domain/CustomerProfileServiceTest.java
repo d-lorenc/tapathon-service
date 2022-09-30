@@ -1,20 +1,20 @@
 package com.example.customerprofile.domain;
 
-import com.example.customerprofile.data.CustomerProfileEntity;
 import com.example.customerprofile.data.CustomerProfileRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;
-import java.util.UUID;
 
+import static com.example.customerprofile.domain.TestData.testCustomerProfile;
+import static com.example.customerprofile.domain.TestData.testNewCustomerProfile;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class CustomerProfileServiceTest {
@@ -27,39 +27,24 @@ class CustomerProfileServiceTest {
 
     @Test
     void shouldDelegateToRepositoryToPersistProfile() {
-        var customerProfile = new CustomerProfileCreateRequest("Joe", "Doe", "joe.doe@test.org");
-        when(repository.save(any())).thenAnswer((invocation) -> invocation.getArgument(0));
+        NewCustomerProfile newCustomerProfile = testNewCustomerProfile();
+        CustomerProfile customerProfile = testCustomerProfile();
+        when(repository.create(any())).thenReturn(customerProfile);
 
-        var result = subject.create(customerProfile);
+        var result = subject.create(newCustomerProfile);
 
-        assertThat(result).isNotNull();
-        assertThat(result.getFirstName()).isEqualTo(customerProfile.getFirstName());
-        assertThat(result.getLastName()).isEqualTo(customerProfile.getLastName());
-        assertThat(result.getEmail()).isEqualTo(customerProfile.getEmail());
-
-        var customerProfileEntityCaptor = ArgumentCaptor.forClass(CustomerProfileEntity.class);
-        verify(repository).save(customerProfileEntityCaptor.capture());
-
-        var customerProfileEntity = customerProfileEntityCaptor.getValue();
-        assertThat(customerProfileEntity.getFirstName()).isEqualTo(customerProfile.getFirstName());
-        assertThat(customerProfileEntity.getLastName()).isEqualTo(customerProfile.getLastName());
-        assertThat(customerProfileEntity.getEmail()).isEqualTo(customerProfile.getEmail());
-        assertThat(customerProfileEntity.getId()).isEqualTo(result.getId());
+        assertThat(result).isSameAs(customerProfile);
+        verify(repository).create(newCustomerProfile);
     }
 
     @Test
     void shouldDelegateToRepositoryToRetrieveProfile() {
-        var entity = new CustomerProfileEntity().setId(123L).setFirstName("Joe").setLastName("Doe").setEmail("joe.doe@test.org");
-        when(repository.findById(any())).thenReturn(Optional.of(entity));
+        var optionalCustomerProfile = Optional.of(testCustomerProfile());
+        when(repository.findById(any())).thenReturn(optionalCustomerProfile);
 
-        var resultOptional = subject.getById(123L);
+        var result = subject.getById(123L);
 
-        assertThat(resultOptional).isPresent();
-        var result = resultOptional.get();
-        assertThat(result.getFirstName()).isEqualTo(entity.getFirstName());
-        assertThat(result.getLastName()).isEqualTo(entity.getLastName());
-        assertThat(result.getEmail()).isEqualTo(entity.getEmail());
-        assertThat(result.getId()).isEqualTo(123L);
+        assertThat(result).isSameAs(optionalCustomerProfile);
         verify(repository).findById(123L);
     }
 }
