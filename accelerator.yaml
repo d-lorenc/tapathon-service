@@ -50,6 +50,17 @@ engine:
                   with: "'<groupId>' + #groupId + '</groupId>'"
     # end of the Maven specific part
 
+    # Application YAML
+    - merge:
+        - exclude: [ "**/application.yaml" ]
+        - include: [ "**/application.yaml" ]
+          chain:
+            - type: ReplaceText
+              substitutions:
+                - text: "customer-profile"
+                  with: "#artifactId"
+    # End Application YAML
+
     # Workload Resource name
     - merge:
         - exclude: [ "config/workload.yaml" ]
