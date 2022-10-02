@@ -12,7 +12,13 @@ spec:
   build:
     env:
       - name: BP_JVM_VERSION
-        value: 17
+        value: "17"
+  env:
+    - name: MANAGEMENT_METRICS_EXPORT_WAVEFRONT_APITOKEN
+      valueFrom:
+        configMapKeyRef:
+          name: wavefront-config
+          key: apitoken
   params:
     - name: annotations
       value:
