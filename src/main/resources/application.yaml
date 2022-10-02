@@ -12,6 +12,3 @@ spring:
     driverClassName: org.h2.Driver
   flyway.enabled: true
 springdoc.api-docs.path: /api-docs
-management.metrics.export.wavefront:
-  uri: https://wavefront.surf
-  api-token: 962d95ed-bede-4dc5-8761-ec3ef1ad702e
