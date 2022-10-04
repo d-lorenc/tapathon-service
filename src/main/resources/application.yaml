@@ -12,5 +12,5 @@ spring:
     driverClassName: org.h2.Driver
   flyway.enabled: true
 springdoc.api-docs.path: /api-docs
-management.metrics.export.wavefront.uri: https://vmwareprod.wavefront.com
+management.metrics.export.wavefront.uri: https://vmware.wavefront.com/
 wavefront.application.name: tapathon
